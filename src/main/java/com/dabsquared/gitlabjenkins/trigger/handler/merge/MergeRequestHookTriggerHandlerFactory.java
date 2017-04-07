@@ -15,16 +15,16 @@ public final class MergeRequestHookTriggerHandlerFactory {
 
     public static MergeRequestHookTriggerHandler newMergeRequestHookTriggerHandler(boolean triggerOnMergeRequest,
                                                                                    TriggerOpenMergeRequest triggerOpenMergeRequest,
-                                                                                   boolean skipWorkInProgressMergeRequest) {
+                                                                                   boolean skipWorkInProgressMergeRequest, boolean triggerOnPipelineEvent) {
         if (triggerOnMergeRequest || triggerOpenMergeRequest != TriggerOpenMergeRequest.never) {
-            return new MergeRequestHookTriggerHandlerImpl(retrieveAllowedStates(triggerOnMergeRequest, triggerOpenMergeRequest),
+            return new MergeRequestHookTriggerHandlerImpl(retrieveAllowedStates(triggerOnMergeRequest, triggerOpenMergeRequest, triggerOnPipelineEvent),
                                                           skipWorkInProgressMergeRequest);
         } else {
             return new NopMergeRequestHookTriggerHandler();
         }
     }
 
-    private static List<State> retrieveAllowedStates(boolean triggerOnMergeRequest, TriggerOpenMergeRequest triggerOpenMergeRequest) {
+    private static List<State> retrieveAllowedStates(boolean triggerOnMergeRequest, TriggerOpenMergeRequest triggerOpenMergeRequest, boolean triggerOnPipelineEvent) {
         List<State> result = new ArrayList<>();
         if (triggerOnMergeRequest) {
             result.add(State.opened);
