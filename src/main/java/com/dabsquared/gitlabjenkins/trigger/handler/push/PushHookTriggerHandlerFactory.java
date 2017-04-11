@@ -14,9 +14,9 @@ public final class PushHookTriggerHandlerFactory {
 
     public static PushHookTriggerHandler newPushHookTriggerHandler(boolean triggerOnPush,
                                                                    TriggerOpenMergeRequest triggerOpenMergeRequestOnPush,
-                                                                   boolean skipWorkInProgressMergeRequest, boolean triggerOnPipelineEvent) {
+                                                                   boolean skipWorkInProgressMergeRequest) {
         if (triggerOnPush || triggerOpenMergeRequestOnPush == TriggerOpenMergeRequest.both) {
-            return new PushHookTriggerHandlerList(retrieveHandlers(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, triggerOnPipelineEvent));
+            return new PushHookTriggerHandlerList(retrieveHandlers(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest));
         } else {
             return new NopPushHookTriggerHandler();
         }
@@ -24,7 +24,7 @@ public final class PushHookTriggerHandlerFactory {
 
     private static List<PushHookTriggerHandler> retrieveHandlers(boolean triggerOnPush,
                                                                  TriggerOpenMergeRequest triggerOpenMergeRequestOnPush,
-                                                                 boolean skipWorkInProgressMergeRequest, boolean triggerOnPipelineEvent) {
+                                                                 boolean skipWorkInProgressMergeRequest) {
         List<PushHookTriggerHandler> result = new ArrayList<>();
         if (triggerOnPush) {
             result.add(new PushHookTriggerHandlerImpl());

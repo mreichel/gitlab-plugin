@@ -62,6 +62,7 @@ import java.security.SecureRandom;
 import static com.dabsquared.gitlabjenkins.trigger.filter.BranchFilterConfig.BranchFilterConfigBuilder.branchFilterConfig;
 import static com.dabsquared.gitlabjenkins.trigger.handler.merge.MergeRequestHookTriggerHandlerFactory.newMergeRequestHookTriggerHandler;
 import static com.dabsquared.gitlabjenkins.trigger.handler.note.NoteHookTriggerHandlerFactory.newNoteHookTriggerHandler;
+import static com.dabsquared.gitlabjenkins.trigger.handler.pipeline.PipelineHookTriggerHandlerFactory.newPipelineHookTriggerHandler;
 import static com.dabsquared.gitlabjenkins.trigger.handler.push.PushHookTriggerHandlerFactory.newPushHookTriggerHandler;
 
 
@@ -106,12 +107,12 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
 
     @DataBoundConstructor
     @GeneratePojoBuilder(intoPackage = "*.builder.generated", withFactoryMethod = "*")
-    public GitLabPushTrigger(boolean triggerOnPush, boolean triggerOnMergeRequest, boolean triggerOnPipelineEvent, TriggerOpenMergeRequest triggerOpenMergeRequestOnPush,
+    public GitLabPushTrigger(boolean triggerOnPush, boolean triggerOnMergeRequest, TriggerOpenMergeRequest triggerOpenMergeRequestOnPush,
                              boolean triggerOnNoteRequest, String noteRegex, boolean skipWorkInProgressMergeRequest, boolean ciSkip,
                              boolean setBuildDescription, boolean addNoteOnMergeRequest, boolean addCiMessage, boolean addVoteOnMergeRequest,
                              boolean acceptMergeRequestOnSuccess, BranchFilterType branchFilterType,
                              String includeBranchesSpec, String excludeBranchesSpec, String targetBranchRegex,
-                             MergeRequestLabelFilterConfig mergeRequestLabelFilterConfig, String secretToken) {
+                             MergeRequestLabelFilterConfig mergeRequestLabelFilterConfig, String secretToken, boolean triggerOnPipelineEvent) {
         this.triggerOnPush = triggerOnPush;
         this.triggerOnMergeRequest = triggerOnMergeRequest;
         this.triggerOnNoteRequest = triggerOnNoteRequest;
@@ -264,9 +265,10 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
     }
 
     private void initializeTriggerHandler() {
-        mergeRequestHookTriggerHandler = newMergeRequestHookTriggerHandler(triggerOnMergeRequest, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, triggerOnPipelineEvent);
+        mergeRequestHookTriggerHandler = newMergeRequestHookTriggerHandler(triggerOnMergeRequest, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest);
         noteHookTriggerHandler = newNoteHookTriggerHandler(triggerOnNoteRequest, noteRegex);
-        pushHookTriggerHandler = newPushHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, triggerOnPipelineEvent);
+        pushHookTriggerHandler = newPushHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest);
+        pipelineTriggerHandler = newPipelineHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, triggerOnPipelineEvent);
     }
 
     private void initializeBranchFilter() {
