@@ -112,8 +112,8 @@ public class ActionResolver {
                 return new PushBuildAction(project, getRequestBody(request), tokenHeader);
             case "Note Hook":
                 return new NoteBuildAction(project, getRequestBody(request), tokenHeader);
-            //case "Pipeline Hook":
-                //return new PipelineBuildAction(project, getRequestBody(request), tokenHeader);
+            case "Pipeline Hook":
+                return new PipelineBuildAction(project, getRequestBody(request), tokenHeader);
             default:
                 LOGGER.log(Level.FINE, "Unsupported X-Gitlab-Event header: {0}", eventHeader);
                 return new NoopAction();
