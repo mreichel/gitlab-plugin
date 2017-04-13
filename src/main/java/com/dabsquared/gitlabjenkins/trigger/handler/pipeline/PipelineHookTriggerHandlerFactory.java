@@ -1,7 +1,7 @@
 package com.dabsquared.gitlabjenkins.trigger.handler.pipeline;
 
 import com.dabsquared.gitlabjenkins.gitlab.hook.model.State;
-import com.dabsquared.gitlabjenkins.trigger.TriggerOpenMergeRequest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +13,7 @@ public final class PipelineHookTriggerHandlerFactory {
     private PipelineHookTriggerHandlerFactory() {
     }
 
-    public static PipelineHookTriggerHandler newPipelineHookTriggerHandler(boolean triggerOnPush,
-                                                                           TriggerOpenMergeRequest triggerOpenMergeRequestOnPush,
-                                                                           boolean skipWorkInProgressMergeRequest, boolean triggerOnPipelineEvent) {
+    public static PipelineHookTriggerHandler newPipelineHookTriggerHandler(boolean triggerOnPipelineEvent) {
         if (triggerOnPipelineEvent) {
             return new PipelineHookTriggerHandlerImpl(retrieve(triggerOnPipelineEvent));
         } else {

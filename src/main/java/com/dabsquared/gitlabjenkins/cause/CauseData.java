@@ -46,13 +46,13 @@ public final class CauseData {
     private final String triggerPhrase;
     private final String ref;
     private final String beforeSha;
-    private final boolean isTag;
+    private final String isTag;
     private final String sha;
     private final String status;
-    private final List<String> stages;
-    private final Date createdAt;
-    private final Date finishedAt;
-    private final int duration;
+    private final String stages;
+    private final String createdAt;
+    private final String finishedAt;
+    private final String buildDuration;
 
     @GeneratePojoBuilder(withFactoryMethod = "*")
     CauseData(ActionType actionType, Integer sourceProjectId, Integer targetProjectId, String branch, String sourceBranch, String userName,
@@ -60,8 +60,8 @@ public final class CauseData {
               String sourceRepoSshUrl, String sourceRepoHttpUrl, String mergeRequestTitle, String mergeRequestDescription, Integer mergeRequestId,
               Integer mergeRequestIid, String targetBranch, String targetRepoName, String targetNamespace, String targetRepoSshUrl,
               String targetRepoHttpUrl, String triggeredByUser, String before, String after, String lastCommit, String targetProjectUrl,
-              String triggerPhrase, String ref, boolean isTag, String sha, String beforeSha, String status, List<String> stages, Date createdAt, Date finishedAt,
-              int duration) {
+              String triggerPhrase, String ref, String isTag, String sha, String beforeSha, String status, String stages, String createdAt, String finishedAt,
+              String buildDuration){
         this.actionType = checkNotNull(actionType, "actionType must not be null.");
         this.sourceProjectId = checkNotNull(sourceProjectId, "sourceProjectId must not be null.");
         this.targetProjectId = checkNotNull(targetProjectId, "targetProjectId must not be null.");
@@ -98,7 +98,7 @@ public final class CauseData {
         this.stages = stages;
         this.createdAt = createdAt;
         this.finishedAt = finishedAt;
-        this.duration = duration;
+        this.buildDuration = buildDuration;
     }
 
     public Map<String, String> getBuildVariables() {
@@ -128,13 +128,13 @@ public final class CauseData {
         variables.put("gitlabAfter", after);
         variables.put("ref", ref);
         variables.put("beforeSha", beforeSha);
-        variables.put("isTag", Boolean.toString(isTag));
+        variables.put("isTag", isTag);
         variables.put("sha", sha);
         variables.put("status", status);
-        variables.put("stages", stages.toString());
-        variables.put("createdAt", createdAt.toString());
-        variables.put("finishedAt", finishedAt.toString());
-        variables.put("duration", String.valueOf(duration));
+        variables.put("stages", stages);
+        variables.put("createdAt", createdAt);
+        variables.put("finishedAt", finishedAt);
+        variables.put("duration", buildDuration);
         variables.pufIfNotNull("gitlabTriggerPhrase", triggerPhrase);
         return variables;
     }
@@ -249,7 +249,7 @@ public final class CauseData {
 
     public String getRef() { return ref; }
 
-    public boolean getIsTag() { return isTag; }
+    public String getIsTag() { return isTag; }
 
     public String getSha() { return sha; }
 
@@ -257,13 +257,13 @@ public final class CauseData {
 
     public String getStatus() { return status; }
 
-    public List<String> getStages() { return stages; }
+    public String getStages() { return stages; }
 
-    public Date getCreatedAt() { return createdAt; }
+    public String getCreatedAt() { return createdAt; }
 
-    public Date getFinishedAt() { return finishedAt; }
+    public String getFinishedAt() { return finishedAt; }
 
-    public int getDuration() { return duration; }
+    public String getBuildDuration() { return buildDuration; }
 
 
     String getShortDescription() {
@@ -311,12 +311,12 @@ public final class CauseData {
             .append(ref, causeData.getRef())
             .append(isTag, causeData.getIsTag())
             .append(sha, causeData.getSha())
-            .append(beforeSha, causeData.beforeSha)
+            .append(beforeSha, causeData.getBeforeSha())
             .append(status, causeData.getStatus())
             .append(stages, causeData.getStages())
             .append(createdAt, causeData.getCreatedAt())
             .append(finishedAt, causeData.getFinishedAt())
-            .append(duration, causeData.getDuration())
+            .append(buildDuration, causeData.getBuildDuration())
             .isEquals();
     }
 
@@ -358,7 +358,7 @@ public final class CauseData {
             .append(stages)
             .append(createdAt)
             .append(finishedAt)
-            .append(duration)
+            .append(buildDuration)
             .toHashCode();
     }
 
@@ -400,7 +400,7 @@ public final class CauseData {
             .append("stages", stages)
             .append("createdAt", createdAt)
             .append("finishedAt", finishedAt)
-            .append("duration", duration)
+            .append("duration", buildDuration)
             .toString();
     }
 
@@ -449,22 +449,13 @@ public final class CauseData {
                 }
             }
         }, PIPELINE {
-            //TODO specialize for pipeline
                 @Override
                 String getShortDescription(CauseData data) {
-                    String triggeredBy = data.getTriggeredByUser();
-                    String forkNamespace = StringUtils.equals(data.getSourceNamespace(), data.getTargetBranch()) ? "" : data.getSourceNamespace() + "/";
-                    if (Jenkins.getActiveInstance().getMarkupFormatter() instanceof EscapedMarkupFormatter || data.getTargetProjectUrl() == null) {
-                        return Messages.GitLabWebHookCause_ShortDescription_NoteHook_plain(triggeredBy,
-                            String.valueOf(data.getMergeRequestIid()),
-                            forkNamespace + data.getSourceBranch(),
-                            data.getTargetBranch());
+                    String getStatus = data.getStatus();
+                    if (getStatus == null) {
+                       return Messages.GitLabWebHookCause_ShortDescription_PipelineHook_noStatus();
                     } else {
-                        return Messages.GitLabWebHookCause_ShortDescription_NoteHook_html(triggeredBy,
-                            String.valueOf(data.getMergeRequestIid()),
-                            forkNamespace + data.getSourceBranch(),
-                            data.getTargetBranch(),
-                            data.getTargetProjectUrl());
+                      return Messages.GitLabWebHookCause_ShortDescription_PipelineHook(getStatus);
                     }
                 }
         };

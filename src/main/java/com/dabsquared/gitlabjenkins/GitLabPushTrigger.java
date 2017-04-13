@@ -268,7 +268,7 @@ public class GitLabPushTrigger extends Trigger<Job<?, ?>> {
         mergeRequestHookTriggerHandler = newMergeRequestHookTriggerHandler(triggerOnMergeRequest, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest);
         noteHookTriggerHandler = newNoteHookTriggerHandler(triggerOnNoteRequest, noteRegex);
         pushHookTriggerHandler = newPushHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest);
-        pipelineTriggerHandler = newPipelineHookTriggerHandler(triggerOnPush, triggerOpenMergeRequestOnPush, skipWorkInProgressMergeRequest, triggerOnPipelineEvent);
+        pipelineTriggerHandler = newPipelineHookTriggerHandler(triggerOnPipelineEvent);
     }
 
     private void initializeBranchFilter() {

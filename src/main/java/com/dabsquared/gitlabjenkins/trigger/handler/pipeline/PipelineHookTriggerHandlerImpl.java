@@ -34,8 +34,7 @@ class PipelineHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<Pipel
     @Override
     public void handle(Job<?, ?> job, PipelineHook hook, boolean ciSkip, BranchFilter branchFilter, MergeRequestLabelFilter mergeRequestLabelFilter) {
         PipelineEventObjectAttributes objectAttributes = hook.getObjectAttributes();
-        if (allowedStates.contains(objectAttributes.getStatus())
-            ) {
+        if (allowedStates.contains(objectAttributes.getStatus())) {
             super.handle(job, hook, ciSkip, branchFilter, mergeRequestLabelFilter);
         }
     }
@@ -60,14 +59,31 @@ class PipelineHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<Pipel
     protected CauseData retrieveCauseData(PipelineHook hook) {
         return causeData()
                 .withActionType(CauseData.ActionType.PIPELINE)
+                .withSourceProjectId(hook.getObjectAttributes().getId())
+                .withTargetProjectId(hook.getObjectAttributes().getId())
+                .withBranch(getTargetBranch(hook))
+                .withSourceBranch(getTargetBranch(hook))
+                .withUserName(hook.getUser().getName())
+                .withSourceRepoName(hook.getRepository().getName())
+                .withSourceNamespace(hook.getProject().getNamespace())
+                .withSourceRepoSshUrl(hook.getRepository().getGitSshUrl())
+                .withSourceRepoHttpUrl(hook.getRepository().getGitHttpUrl())
+                .withMergeRequestTitle("")
+                .withTargetBranch(getTargetBranch(hook))
+                .withTargetRepoName("")
+                .withTargetNamespace("")
+                .withTargetRepoSshUrl("")
+                .withTargetRepoHttpUrl("")
+                .withLastCommit(hook.getObjectAttributes().getSha())
+                .withTriggeredByUser(hook.getUser().getName())
                 .withRef(hook.getObjectAttributes().getRef())
                 .withSha(hook.getObjectAttributes().getSha())
                 .withBeforeSha(hook.getObjectAttributes().getBeforeSha())
-                .withStatus(hook.getObjectAttributes().getStatus())
-                .withStages(hook.getObjectAttributes().getStages())
-                .withCreatedAt(hook.getObjectAttributes().getCreatedAt())
-                .withFinishedAt(hook.getObjectAttributes().getFinishedAt())
-                .withDuration(hook.getObjectAttributes().getDuration())
+                .withStatus(hook.getObjectAttributes().getStatus()==null?"":hook.getObjectAttributes().getStatus().toString())
+                .withStages(hook.getObjectAttributes().getStages()==null?"":hook.getObjectAttributes().getStages().toString())
+                .withCreatedAt(hook.getObjectAttributes().getCreatedAt()==null?"":hook.getObjectAttributes().getCreatedAt().toString())
+                .withFinishedAt(hook.getObjectAttributes().getFinishedAt()==null?"":hook.getObjectAttributes().getFinishedAt().toString())
+                .withBuildDuration(String.valueOf(hook.getObjectAttributes().getDuration()))
                 .build();
     }
 
