@@ -1,5 +1,6 @@
 package com.dabsquared.gitlabjenkins.trigger.handler.pipeline;
 
+import com.dabsquared.gitlabjenkins.gitlab.hook.model.PipelineHook;
 import com.dabsquared.gitlabjenkins.gitlab.hook.model.State;
 import com.dabsquared.gitlabjenkins.gitlab.hook.model.User;
 import com.dabsquared.gitlabjenkins.trigger.filter.BranchFilterType;
@@ -48,16 +49,56 @@ public class PipelineHookTriggerHandlerImplTest {
     public TemporaryFolder tmp = new TemporaryFolder();
 
     private PipelineHookTriggerHandler pipelineHookTriggerHandler;
+    private PipelineHook pipelineHook;
 
     @Before
-    public void setup() {
+    public void setup() throws IOException, GitAPIException {
 
-        List<State> allowedStates = new ArrayList<>();
-        allowedStates.add(State.success);
+        List<String> allowedStates = new ArrayList<>();
+        allowedStates.add("success");
+
+        User user = new User();
+        user.setName("test");
+        user.setId(1);
+
+        Git.init().setDirectory(tmp.getRoot()).call();
+        tmp.newFile("test");
+        Git git = Git.open(tmp.getRoot());
+        git.add().addFilepattern("test");
+        git.commit().setMessage("test").call();
+        ObjectId head = git.getRepository().resolve(Constants.HEAD);
+
         pipelineHookTriggerHandler = new PipelineHookTriggerHandlerImpl(allowedStates);
+        pipelineHook = pipelineHook()
+            .withProjectId(1)
+            .withUser(user)
+            .withRepository(repository()
+                .withName("test")
+                .withHomepage("https://gitlab.org/test")
+                .withUrl("git@gitlab.org:test.git")
+                .withGitSshUrl("git@gitlab.org:test.git")
+                .withGitHttpUrl("https://gitlab.org/test.git")
+                .build())
+            .withProject(project()
+                .withNamespace("test-namespace")
+                .withWebUrl("https://gitlab.org/test")
+                .withId(1)
+                .build())
+            .withObjectAttributes(pipelineEventObjectAttributes()
+                .withId(1)
+                .withStatus("success")
+                .withSha("bcbb5ec396a2c0f828686f14fac9b80b780504f2")
+                .withStages(new ArrayList<String>())
+                .withRef("refs/heads/" + git.nameRev().add(head).call().get(head))
+                .build())
+
+            .build();
     }
 
     @Test
+    /**
+     * always triggers since pipeline events do not contain ci skip message
+     */
     public void pipeline_ciSkip() throws IOException, InterruptedException {
         final OneShotEvent buildTriggered = new OneShotEvent();
         FreeStyleProject project = jenkins.createFreeStyleProject();
@@ -69,15 +110,11 @@ public class PipelineHookTriggerHandlerImplTest {
             }
         });
         project.setQuietPeriod(0);
-        pipelineHookTriggerHandler.handle(project, pipelineHook()
-                .withObjectAttributes(pipelineEventObjectAttributes()
-                .withStatus(State.success)
-                .build())
-            .build(), true, newBranchFilter(branchFilterConfig().build(BranchFilterType.All)),
+        pipelineHookTriggerHandler.handle(project, pipelineHook , true, newBranchFilter(branchFilterConfig().build(BranchFilterType.All)),
             newMergeRequestLabelFilter(null));
 
         buildTriggered.block(10000);
-        assertThat(buildTriggered.isSignaled(), is(false));
+        assertThat(buildTriggered.isSignaled(), is(true));
     }
 
     @Test
@@ -93,39 +130,8 @@ public class PipelineHookTriggerHandlerImplTest {
             }
         });
         project.setQuietPeriod(0);
-        User user = new User();
-        user.setName("test");
-        user.setId(1);
 
-        Git.init().setDirectory(tmp.getRoot()).call();
-        tmp.newFile("test");
-        Git git = Git.open(tmp.getRoot());
-        git.add().addFilepattern("test");
-        git.commit().setMessage("test").call();
-        ObjectId head = git.getRepository().resolve(Constants.HEAD);
-
-        pipelineHookTriggerHandler.handle(project, pipelineHook()
-                .withUser(user)
-                .withRepository(repository()
-                        .withName("test")
-                        .withHomepage("https://gitlab.org/test")
-                        .withUrl("git@gitlab.org:test.git")
-                        .withGitSshUrl("git@gitlab.org:test.git")
-                        .withGitHttpUrl("https://gitlab.org/test.git")
-                        .build())
-                .withProject(project()
-                        .withNamespace("test-namespace")
-                        .withWebUrl("https://gitlab.org/test")
-                        .build())
-                .withObjectAttributes(pipelineEventObjectAttributes()
-                    .withId(1)
-                    .withStatus(State.success)
-                    .withSha("bcbb5ec396a2c0f828686f14fac9b80b780504f2")
-                    .withStages(new ArrayList<String>())
-                    .withRef("refs/heads/" + git.nameRev().add(head).call().get(head))
-                    .build())
-
-                .build(), false, newBranchFilter(branchFilterConfig().build(BranchFilterType.All)),
+        pipelineHookTriggerHandler.handle(project, pipelineHook, false, newBranchFilter(branchFilterConfig().build(BranchFilterType.All)),
                                       newMergeRequestLabelFilter(null));
 
         buildTriggered.block(10000);

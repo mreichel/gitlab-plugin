@@ -19,7 +19,7 @@ public class PipelineEventObjectAttributes {
     private boolean tag;
     private String sha;
     private String beforeSha;
-    private State status;
+    private String status;
     private List<String> stages;
     private Date createdAt;
     private Date finishedAt;
@@ -57,11 +57,11 @@ public class PipelineEventObjectAttributes {
         this.beforeSha = beforeSha;
     }
 
-    public State getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(State status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

@@ -10,6 +10,8 @@ import java.util.List;
  */
 public final class PipelineHookTriggerHandlerFactory {
 
+    public static final String SUCCESS = "success";
+
     private PipelineHookTriggerHandlerFactory() {
     }
 
@@ -22,10 +24,10 @@ public final class PipelineHookTriggerHandlerFactory {
     }
 
 
-    private static List<State> retrieve(boolean triggerOnPipelineEvent) {
-        List<State> result = new ArrayList<>();
+    private static List<String> retrieve(boolean triggerOnPipelineEvent) {
+        List<String> result = new ArrayList<>();
         if (triggerOnPipelineEvent) {
-            result.add(State.success);
+            result.add(SUCCESS);
         }
         return result;
     }
